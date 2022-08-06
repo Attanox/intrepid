@@ -1,0 +1,29 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String   @unique
+  positionX  Int      @default(0)
+  positionY  Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Todo {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  text         String
+  is_completed Boolean
+  order        Int
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+}
