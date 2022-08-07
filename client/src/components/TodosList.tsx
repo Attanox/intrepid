@@ -1,7 +1,5 @@
 import React, { FormEvent } from "react";
 import { useSubscription, useMutation, gql } from "@apollo/client";
-import { Container, Row, Col, FormInput, Button, Alert } from "shards-react";
-
 interface Todo {
   id: string;
   text: string;
@@ -35,13 +33,22 @@ const Todos = () => {
   }
 
   return (
-    <React.Fragment>
+    <div className="container mx-auto grid grid-cols-4">
       {data.todos.map(({ id, text }) => (
-        <Alert key={id} theme="dark" style={{ marginBottom: "10px" }}>
-          {text}
-        </Alert>
+        <React.Fragment>
+          <div className="col-span-1" />
+          <div
+            className="col-span-2 card w-full bg-base-100 shadow-xl mx-auto mb-3"
+            key={id}
+          >
+            <div className="card-body">
+              <h2 className="card-title">{text}</h2>
+            </div>
+          </div>
+          <div className="col-span-1" />
+        </React.Fragment>
       ))}
-    </React.Fragment>
+    </div>
   );
 };
 
@@ -61,23 +68,45 @@ const TodosList = () => {
     }
     inputRef.current.value = "";
   };
+
   return (
     <form onSubmit={onSend}>
-      <Container>
-        <Row>
-          <Col xs={2} style={{ padding: 0 }}>
-            <FormInput label="User" value={"Andi!"} disabled />
-          </Col>
-          <Col xs={8}>
-            <FormInput label="Content" innerRef={inputRef} />
-          </Col>
-          <Col xs={2} style={{ padding: 0 }}>
-            <Button type="submit" style={{ width: "100%" }}>
+      <div className="container mx-auto">
+        <div className="grid grid-cols-4 justify-center items-end">
+          <div className="col-span-1 p-2">
+            <div className="form-control w-full ">
+              <label className="label">
+                <span className="label-text">User</span>
+              </label>
+              <input
+                type="text"
+                defaultValue="Andi!"
+                className="input input-bordered w-full "
+                disabled
+              />
+            </div>
+          </div>
+          <div className="col-span-2 p-2">
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text">Content</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Type here"
+                defaultValue="Andi!"
+                className="input input-bordered w-full "
+                ref={inputRef}
+              />
+            </div>
+          </div>
+          <div className="col-span-1 p-2 ">
+            <button className="btn btn-primary w-full" type="submit">
               Send
-            </Button>
-          </Col>
-        </Row>
-      </Container>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <Todos />
     </form>

@@ -1,34 +1,30 @@
 import React from "react";
 import { motion, useMotionValue } from "framer-motion";
 
-export const COLORS = {
-  red: { default: "#FF3366", dim: "#501D2A" },
-  yellow: { default: "#FFBB00", dim: "#503F10" },
-  blue: { default: "#0088FF", dim: "#103250" },
-  green: { default: "#22DD88", dim: "#194832" },
-  orange: { default: "#FF8800", dim: "#503210" },
-  pink: { default: "#FF0099", dim: "#501037" },
-  purple: { default: "#AA44FF", dim: "#3B2150" },
-};
+export const COLORS = ["#E779C1", "#58C7F3", "#71EAD2", "#F3CC30", "#E24056"];
 
 const CURSOR_SIZE = 30;
-const COSMOS = [
-  { cosmo: "🪐", color: COLORS.orange },
-  { cosmo: "🛰", color: COLORS.pink },
-  { cosmo: "🌌", color: COLORS.purple },
-  { cosmo: "🌍", color: COLORS.orange },
-  { cosmo: "🌙", color: COLORS.yellow },
-  { cosmo: "☀", color: COLORS.yellow },
-  { cosmo: "🛸", color: COLORS.green },
-  { cosmo: "🚀", color: COLORS.blue },
-  { cosmo: "☄", color: COLORS.red },
-  { cosmo: "⭐", color: COLORS.red },
-];
 
-const getCosmo = (id: string) => {
-  const index = (id?.charCodeAt(0) || 0) % COSMOS.length;
-  return COSMOS[index];
+const getColor = (id: string) => {
+  const index = (id?.charCodeAt(0) || 0) % COLORS.length;
+  return COLORS[index];
 };
+
+function CursorSvg({ color }: { color: string }) {
+  return (
+    <svg
+      width={CURSOR_SIZE}
+      height={CURSOR_SIZE}
+      viewBox="0 0 24 36"
+      fill="none"
+    >
+      <path
+        fill={color}
+        d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z"
+      />
+    </svg>
+  );
+}
 
 const Cursor = ({ id, x, y } = { id: "0", x: 0, y: 0 }) => {
   const posX = useMotionValue(0);
@@ -45,26 +41,23 @@ const Cursor = ({ id, x, y } = { id: "0", x: 0, y: 0 }) => {
   return (
     <motion.div
       style={{
-        y: posY,
-        x: posX,
-        width: CURSOR_SIZE,
-        height: CURSOR_SIZE,
+        top: "0",
+        left: "0",
         position: "absolute",
         zIndex: "999999999",
         pointerEvents: "none",
-        fontSize: 16,
         userSelect: "none",
-        background: getCosmo(id).color.dim,
-        boxShadow: `inset 0px 0px 0px 2px ${
-          getCosmo(id).color.default
-        }, 0px 8px 16px rgba(0,0,0,0.4)`,
-        borderRadius: "50%",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+      }}
+      initial={{ x: posX.get(), y: posY.get() }}
+      animate={{ x: posX.get(), y: posY.get() }}
+      transition={{
+        type: "spring",
+        damping: 30,
+        mass: 0.8,
+        stiffness: 350,
       }}
     >
-      {getCosmo(id).cosmo}
+      <CursorSvg color={getColor(id)} />
     </motion.div>
   );
 };
