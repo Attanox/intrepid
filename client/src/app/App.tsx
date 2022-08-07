@@ -4,11 +4,14 @@ import "shards-ui/dist/css/shards.min.css";
 
 import WithApollo from "./withApollo";
 import TodosList from "@/components/TodosList";
+import CollabArea from "@/components/CollabArea";
 
 function App() {
   return (
     <WithApollo>
-      <TodosList />
+      <CollabArea>
+        <TodosList />
+      </CollabArea>
     </WithApollo>
   );
 }

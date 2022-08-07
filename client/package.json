@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@apollo/client": "^3.0.2",
+    "framer-motion": "^7.0.0",
     "graphql": "^15.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "shards-react": "^1.0.3",
-    "subscriptions-transport-ws": "^0.9.17"
+    "subscriptions-transport-ws": "^0.9.17",
+    "throttle-typescript": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^18.6.4",

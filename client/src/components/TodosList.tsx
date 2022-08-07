@@ -7,14 +7,20 @@ interface Todo {
   text: string;
   is_completed: boolean;
 }
-
-interface TodosQuery {
-  todos: Todo[];
+interface Cursor {
+  id: string;
+  x: number;
+  y: number;
 }
 
-const GET_TODOS = gql`
+interface State {
+  todos: Todo[];
+  cursors: Cursor[];
+}
+
+const GET_STATE = gql`
   subscription {
-    todos {
+    state {
       id
       text
       is_completed
@@ -28,8 +34,8 @@ const ADD_TODO = gql`
   }
 `;
 
-const Todo = () => {
-  const { data } = useSubscription<TodosQuery>(GET_TODOS);
+const Todos = () => {
+  const { data } = useSubscription<State>(GET_STATE);
   if (!data) {
     return <span>No todos to display 🙁</span>;
   }
@@ -64,8 +70,6 @@ const TodosList = () => {
   return (
     <form onSubmit={onSend}>
       <Container>
-        <Todo />
-
         <Row>
           <Col xs={2} style={{ padding: 0 }}>
             <FormInput label="User" value={"Andi!"} disabled />
@@ -79,6 +83,8 @@ const TodosList = () => {
             </Button>
           </Col>
         </Row>
+
+        <Todos />
       </Container>
     </form>
   );

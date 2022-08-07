@@ -2,14 +2,23 @@ import { GraphQLServer, PubSub } from "graphql-yoga";
 import { PrismaClient, Todo } from "@prisma/client";
 import { Props } from "graphql-yoga/dist/types";
 
-const todos: Todo[] = [];
-
 const pubsub = new PubSub();
 const prisma = new PrismaClient();
 
 interface Context {
   pubsub: PubSub;
   prisma: PrismaClient;
+}
+
+interface Cursor {
+  id: string;
+  x: number;
+  y: number;
+}
+
+interface State {
+  cursors: Cursor[];
+  todos: Todo[];
 }
 
 const typeDefs = `
@@ -19,43 +28,86 @@ const typeDefs = `
     is_completed: Boolean!
     order: Int!
   }
+  type Cursor {
+    id: ID!
+    x: Int!
+    y: Int!
+  }
+  input CursorInput {
+    id: ID!
+    x: Int!
+    y: Int!
+  }
+  type State {
+    todos: [Todo!]
+    cursors: [Cursor!]
+  }
   type Query {
     todos: [Todo!]
   }
   type Mutation {
     addTodo(text: String!): ID!
+    addCursor(c: CursorInput!): ID!
+    updateCursor(c: CursorInput!): ID!
   }
   type Subscription {
-    todos: [Todo!]
+    state: State
   }
 `;
 
+const state: State = {
+  todos: [],
+  cursors: [],
+};
+
 const subscribers: (() => void)[] = [];
-const onTodosUpdates = (fn: () => void) => subscribers.push(fn);
+const onStateUpdates = (fn: () => void) => subscribers.push(fn);
 
 const generateChannelID = () => Math.random().toString(36).slice(2, 15);
 
+const spreadState = () => subscribers.forEach((fn) => fn());
+
 const resolvers = {
   Query: {
-    todos: () => todos,
+    todos: () => state.todos,
   },
   Mutation: {
     addTodo: (_: any, { text }: { text: string }) => {
-      const id = String(todos.length);
-      todos.push({
+      const id = String(state.todos.length);
+      state.todos.push({
         id,
         text,
         is_completed: false,
-        order: todos.length,
+        order: state.todos.length,
         created_at: new Date(),
         updated_at: new Date(),
       });
-      subscribers.forEach((fn) => fn());
+      spreadState();
       return id;
+    },
+    addCursor: (_: any, args: Cursor) => {
+      state.cursors.push(args);
+      spreadState();
+      return args.id;
+    },
+    updateCursor: (_: any, args: Cursor) => {
+      const newCursors = state.cursors.map((c) => {
+        if (c.id === args.id) {
+          return {
+            ...c,
+            x: args.x,
+            y: args.y,
+          };
+        }
+        return c;
+      });
+      state.cursors = newCursors;
+      spreadState();
+      return args.id;
     },
   },
   Subscription: {
-    todos: {
+    state: {
       subscribe: (
         _: any,
         _args: any,
@@ -63,8 +115,8 @@ const resolvers = {
       ) => {
         const channel = generateChannelID();
 
-        onTodosUpdates(() => pubsub.publish(channel, { todos }));
-        setTimeout(() => pubsub.publish(channel, { todos }), 0);
+        onStateUpdates(() => pubsub.publish(channel, state));
+        setTimeout(() => pubsub.publish(channel, state), 0);
 
         return pubsub.asyncIterator(channel);
       },
