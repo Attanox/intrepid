@@ -35,7 +35,7 @@ const Todos = () => {
   return (
     <div className="container mx-auto grid grid-cols-4">
       {data.todos.map(({ id, text }) => (
-        <React.Fragment>
+        <React.Fragment key={id}>
           <div className="col-span-1" />
           <div
             className="col-span-2 card w-full bg-base-100 shadow-xl mx-auto mb-3"
@@ -52,7 +52,13 @@ const Todos = () => {
   );
 };
 
-const TodosList = () => {
+interface Props {
+  currentUser: string;
+}
+
+const TodosList = (props: Props) => {
+  const { currentUser } = props;
+
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [postMessage] = useMutation(ADD_TODO);
 
@@ -80,7 +86,7 @@ const TodosList = () => {
               </label>
               <input
                 type="text"
-                defaultValue="Andi!"
+                defaultValue={currentUser}
                 className="input input-bordered w-full "
                 disabled
               />
@@ -89,12 +95,11 @@ const TodosList = () => {
           <div className="col-span-2 p-2">
             <div className="form-control w-full">
               <label className="label">
-                <span className="label-text">Content</span>
+                <span className="label-text">Todo</span>
               </label>
               <input
                 type="text"
                 placeholder="Type here"
-                defaultValue="Andi!"
                 className="input input-bordered w-full "
                 ref={inputRef}
               />
@@ -113,4 +118,4 @@ const TodosList = () => {
   );
 };
 
-export default () => <TodosList />;
+export default TodosList;

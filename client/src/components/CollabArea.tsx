@@ -2,6 +2,7 @@ import { gql, useMutation, useSubscription } from "@apollo/client";
 import React from "react";
 import { throttle } from "throttle-typescript";
 import Cursor from "./Cursor";
+import UserEnter from "./UserEnter";
 
 interface Cursor {
   id: string;
@@ -29,13 +30,19 @@ const UPDATE_CURSOR = gql`
   }
 `;
 
-const DEFAULT = { id: "andi", x: 0, y: 0 };
+interface Props {
+  children(currentUser: string): React.ReactElement;
+}
 
-const CollabArea = (props: React.PropsWithChildren<{}>) => {
+const CollabArea = (props: Props) => {
   const { children } = props;
 
+  const [currentUser, setCurrentUser] = React.useState("");
+
   const { data } = useSubscription<Cursors>(CURSORS, {
-    variables: { cursor: DEFAULT },
+    variables: { cursor: { id: currentUser, x: 0, y: 0 } },
+    shouldResubscribe: !!currentUser,
+    skip: !currentUser,
   });
 
   const [updateCursor] = useMutation(UPDATE_CURSOR);
@@ -52,13 +59,15 @@ const CollabArea = (props: React.PropsWithChildren<{}>) => {
     updateCursor({
       variables: {
         cursor: {
-          id: DEFAULT.id,
+          id: currentUser,
           ...serverPosition,
         },
       },
     });
   };
-  const onThrottledMouseMove = React.useCallback(throttle(onMouseMove, 30), []);
+  const onThrottledMouseMove = React.useCallback(throttle(onMouseMove, 30), [
+    currentUser,
+  ]);
 
   React.useEffect(() => {
     document.addEventListener("mousemove", onThrottledMouseMove);
@@ -73,12 +82,13 @@ const CollabArea = (props: React.PropsWithChildren<{}>) => {
     // onMouseLeave={() => setVisible(false)}
     // onMouseEnter={() => setVisible(true)}
     >
+      <UserEnter setCurrentUser={setCurrentUser} />
       {data?.cursors.map((c) => {
         const posX = c.x * window.innerWidth;
         const posY = c.y * window.innerHeight;
         return <Cursor key={c.id} id={c.id} x={posX} y={posY} />;
       })}
-      {children}
+      {children(currentUser)}
     </React.Fragment>
   );
 };

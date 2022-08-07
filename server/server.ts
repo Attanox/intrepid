@@ -80,6 +80,8 @@ const resolvers = {
       return id;
     },
     updateCursor: (_: any, args: { c: Cursor }) => {
+      if (!args?.c?.id) return "";
+
       cursors[args.c.id] = {
         ...cursors[args.c.id],
         ...args.c,
@@ -110,6 +112,8 @@ const resolvers = {
         { pubsub }: { pubsub: Context["pubsub"] }
       ) => {
         const channel = generateChannelID();
+
+        if (!args.c.id) return;
 
         cursors[args.c.id] = { ...args.c };
 
