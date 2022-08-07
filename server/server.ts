@@ -16,11 +16,6 @@ interface Cursor {
   y: number;
 }
 
-interface State {
-  cursors: Cursor[];
-  todos: Todo[];
-}
-
 const typeDefs = `
   type Todo {
     id: ID!
@@ -30,84 +25,71 @@ const typeDefs = `
   }
   type Cursor {
     id: ID!
-    x: Int!
-    y: Int!
+    x: Float!
+    y: Float!
   }
   input CursorInput {
     id: ID!
-    x: Int!
-    y: Int!
-  }
-  type State {
-    todos: [Todo!]
-    cursors: [Cursor!]
+    x: Float!
+    y: Float!
   }
   type Query {
+    cursors: [Cursor!]
     todos: [Todo!]
   }
   type Mutation {
     addTodo(text: String!): ID!
-    addCursor(c: CursorInput!): ID!
     updateCursor(c: CursorInput!): ID!
   }
   type Subscription {
-    state: State
+    todos: [Todo!]
+    cursors(c: CursorInput): [Cursor!]
   }
 `;
 
-const state: State = {
-  todos: [],
-  cursors: [],
-};
+const cursors: { [id: string]: Cursor } = {};
+const todos: Todo[] = [];
 
-const subscribers: (() => void)[] = [];
-const onStateUpdates = (fn: () => void) => subscribers.push(fn);
+const todosSubscribers: (() => void)[] = [];
+const onTodosUpdates = (fn: () => void) => todosSubscribers.push(fn);
+const spreadTodos = () => todosSubscribers.forEach((fn) => fn());
+
+const cursorsSubscribers: (() => void)[] = [];
+const onCursorsUpdates = (fn: () => void) => cursorsSubscribers.push(fn);
+const spreadCursors = () => cursorsSubscribers.forEach((fn) => fn());
 
 const generateChannelID = () => Math.random().toString(36).slice(2, 15);
 
-const spreadState = () => subscribers.forEach((fn) => fn());
-
 const resolvers = {
   Query: {
-    todos: () => state.todos,
+    cursors: () => cursors,
+    todos: () => todos,
   },
   Mutation: {
     addTodo: (_: any, { text }: { text: string }) => {
-      const id = String(state.todos.length);
-      state.todos.push({
+      const id = String(todos.length);
+      todos.push({
         id,
         text,
         is_completed: false,
-        order: state.todos.length,
+        order: todos.length,
         created_at: new Date(),
         updated_at: new Date(),
       });
-      spreadState();
+      spreadTodos();
       return id;
     },
-    addCursor: (_: any, args: Cursor) => {
-      state.cursors.push(args);
-      spreadState();
-      return args.id;
-    },
-    updateCursor: (_: any, args: Cursor) => {
-      const newCursors = state.cursors.map((c) => {
-        if (c.id === args.id) {
-          return {
-            ...c,
-            x: args.x,
-            y: args.y,
-          };
-        }
-        return c;
-      });
-      state.cursors = newCursors;
-      spreadState();
-      return args.id;
+    updateCursor: (_: any, args: { c: Cursor }) => {
+      cursors[args.c.id] = {
+        ...cursors[args.c.id],
+        ...args.c,
+      };
+      spreadCursors();
+      return args.c.id;
     },
   },
   Subscription: {
-    state: {
+    todos: {
       subscribe: (
         _: any,
         _args: any,
@@ -115,8 +97,32 @@ const resolvers = {
       ) => {
         const channel = generateChannelID();
 
-        onStateUpdates(() => pubsub.publish(channel, state));
-        setTimeout(() => pubsub.publish(channel, state), 0);
+        onTodosUpdates(() => pubsub.publish(channel, { todos }));
+        setTimeout(() => pubsub.publish(channel, { todos }), 0);
+
+        return pubsub.asyncIterator(channel);
+      },
+    },
+    cursors: {
+      subscribe: (
+        _: any,
+        args: { c: Cursor },
+        { pubsub }: { pubsub: Context["pubsub"] }
+      ) => {
+        const channel = generateChannelID();
+
+        cursors[args.c.id] = { ...args.c };
+
+        onCursorsUpdates(() =>
+          pubsub.publish(channel, { cursors: [...Object.values(cursors)] })
+        );
+        setTimeout(
+          () =>
+            pubsub.publish(channel, {
+              cursors: [...Object.values(cursors)],
+            }),
+          0
+        );
 
         return pubsub.asyncIterator(channel);
       },
