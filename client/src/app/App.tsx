@@ -8,7 +8,7 @@ function App() {
   return (
     <WithApollo>
       <CollabArea>
-        {(currentUser) => <TodosList currentUser={currentUser} />}
+        <TodosList />
       </CollabArea>
     </WithApollo>
   );

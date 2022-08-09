@@ -30,11 +30,7 @@ const UPDATE_CURSOR = gql`
   }
 `;
 
-interface Props {
-  children(currentUser: string): React.ReactElement;
-}
-
-const CollabArea = (props: Props) => {
+const CollabArea = (props: React.PropsWithChildren<{}>) => {
   const { children } = props;
 
   const [currentUser, setCurrentUser] = React.useState("");
@@ -86,9 +82,17 @@ const CollabArea = (props: Props) => {
       {data?.cursors.map((c) => {
         const posX = c.x * window.innerWidth;
         const posY = c.y * window.innerHeight;
-        return <Cursor key={c.id} id={c.id} x={posX} y={posY} />;
+        return (
+          <Cursor
+            key={c.id}
+            id={c.id}
+            current={currentUser === c.id}
+            x={posX}
+            y={posY}
+          />
+        );
       })}
-      {children(currentUser)}
+      {children}
     </React.Fragment>
   );
 };

@@ -26,7 +26,29 @@ function CursorSvg({ color }: { color: string }) {
   );
 }
 
-const Cursor = ({ id, x, y } = { id: "0", x: 0, y: 0 }) => {
+const useFocusInput = (input: React.RefObject<HTMLInputElement>) => {
+  const handleKeyUp = (e: KeyboardEvent) => {
+    if (e.key === "/") {
+      input?.current?.focus();
+    }
+  };
+
+  React.useEffect(() => {
+    document.addEventListener("keyup", handleKeyUp);
+
+    return () => document.removeEventListener("keyup", handleKeyUp);
+  }, [input?.current]);
+
+  return {};
+};
+
+const Cursor = (
+  { id, x, y, current } = { id: "0", x: 0, y: 0, current: false }
+) => {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  useFocusInput(inputRef);
+
   const posX = useMotionValue(0);
   const posY = useMotionValue(0);
 
@@ -37,6 +59,17 @@ const Cursor = ({ id, x, y } = { id: "0", x: 0, y: 0 }) => {
   React.useEffect(() => {
     posY.set(y - CURSOR_SIZE / 2);
   }, [y]);
+
+  const color = getColor(id);
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log(inputRef.current?.value);
+    if (inputRef.current) {
+      inputRef.current.value = "";
+      inputRef.current.blur();
+    }
+  };
 
   return (
     <motion.div
@@ -57,7 +90,31 @@ const Cursor = ({ id, x, y } = { id: "0", x: 0, y: 0 }) => {
         stiffness: 350,
       }}
     >
-      <CursorSvg color={getColor(id)} />
+      <CursorSvg color={color} />
+      <form
+        style={{
+          top: `-10px`,
+          left: `10px`,
+          position: "relative",
+          zIndex: "999999999",
+          pointerEvents: "none",
+          userSelect: "none",
+          background: color,
+          borderRadius: "10px",
+          padding: "5px 10px",
+        }}
+        onSubmit={onSubmit}
+      >
+        <span>{id}</span>
+        {current && (
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Type here"
+            className="input w-full max-w-xs mt-2"
+          />
+        )}
+      </form>
     </motion.div>
   );
 };

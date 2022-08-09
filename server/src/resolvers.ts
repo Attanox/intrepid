@@ -1,14 +1,6 @@
-import { GraphQLServer, PubSub } from "graphql-yoga";
-import { PrismaClient, Todo } from "@prisma/client";
-import { Props } from "graphql-yoga/dist/types";
-
-const pubsub = new PubSub();
-const prisma = new PrismaClient();
-
-interface Context {
-  pubsub: PubSub;
-  prisma: PrismaClient;
-}
+import { v4 as uuid } from "uuid";
+import type { Todo } from "@prisma/client";
+import type { Context } from "./server";
 
 interface Cursor {
   id: string;
@@ -16,39 +8,15 @@ interface Cursor {
   y: number;
 }
 
-const typeDefs = `
-  type Todo {
-    id: ID!
-    text: String!
-    is_completed: Boolean!
-    order: Int!
-  }
-  type Cursor {
-    id: ID!
-    x: Float!
-    y: Float!
-  }
-  input CursorInput {
-    id: ID!
-    x: Float!
-    y: Float!
-  }
-  type Query {
-    cursors: [Cursor!]
-    todos: [Todo!]
-  }
-  type Mutation {
-    addTodo(text: String!): ID!
-    updateCursor(c: CursorInput!): ID!
-  }
-  type Subscription {
-    todos: [Todo!]
-    cursors(c: CursorInput): [Cursor!]
-  }
-`;
+interface Message {
+  id: string;
+  user: string;
+  content: string;
+}
 
 const cursors: { [id: string]: Cursor } = {};
 const todos: Todo[] = [];
+const messages: Message[] = [];
 
 const todosSubscribers: (() => void)[] = [];
 const onTodosUpdates = (fn: () => void) => todosSubscribers.push(fn);
@@ -58,12 +26,17 @@ const cursorsSubscribers: (() => void)[] = [];
 const onCursorsUpdates = (fn: () => void) => cursorsSubscribers.push(fn);
 const spreadCursors = () => cursorsSubscribers.forEach((fn) => fn());
 
+const messagesSubscribers: (() => void)[] = [];
+const onMessagesUpdates = (fn: () => void) => messagesSubscribers.push(fn);
+const spreadMessages = () => messagesSubscribers.forEach((fn) => fn());
+
 const generateChannelID = () => Math.random().toString(36).slice(2, 15);
 
 const resolvers = {
   Query: {
     cursors: () => cursors,
     todos: () => todos,
+    messages: () => messages,
   },
   Mutation: {
     addTodo: (_: any, { text }: { text: string }) => {
@@ -88,6 +61,21 @@ const resolvers = {
       };
       spreadCursors();
       return args.c.id;
+    },
+    postMessage: (
+      _: any,
+      { user, content }: { user: string; content: string }
+    ) => {
+      const id = uuid();
+
+      messages.push({
+        id,
+        user,
+        content,
+      });
+
+      spreadMessages();
+      return id;
     },
   },
   Subscription: {
@@ -131,14 +119,21 @@ const resolvers = {
         return pubsub.asyncIterator(channel);
       },
     },
+    messages: {
+      subscribe: (
+        _: any,
+        _args: any,
+        { pubsub }: { pubsub: Context["pubsub"] }
+      ) => {
+        const channel = generateChannelID();
+
+        onMessagesUpdates(() => pubsub.publish(channel, { messages }));
+        setTimeout(() => pubsub.publish(channel, { messages }), 0);
+
+        return pubsub.asyncIterator(channel);
+      },
+    },
   },
 };
 
-const server = new GraphQLServer({
-  typeDefs,
-  resolvers,
-  context: { pubsub, prisma } as Context,
-} as Props<any, any, Context>);
-server.start(({ port }) => {
-  console.log(`Server on http://localhost:${port}/`);
-});
+export default resolvers;
