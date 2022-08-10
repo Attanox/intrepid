@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.0.2",
+    "@heroicons/react": "^1.0.6",
     "@reach/dialog": "^0.17.0",
     "daisyui": "^2.22.0",
     "framer-motion": "^7.0.0",

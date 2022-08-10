@@ -5,3 +5,25 @@
 html, body {
   cursor: none;
 }
+
+@layer utilities {
+  .scrollbar::-webkit-scrollbar {
+    width: 20px;
+    height: 20px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    border-radius: 100vh;
+    background: #20134E;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background: #2D1B69;
+    border-radius: 100vh;
+    border: 3px solid #20134E;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #2D1B69;
+  }
+}

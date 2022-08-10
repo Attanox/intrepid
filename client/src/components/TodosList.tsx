@@ -28,25 +28,66 @@ const ADD_TODO = gql`
 
 const Todos = () => {
   const { data } = useSubscription<TodosQuery>(GET_TODOS);
-  if (!data) {
-    return <span>No todos to display 🙁</span>;
-  }
 
   return (
-    <div className="container mx-auto grid grid-cols-4">
-      {data.todos.map(({ id, text }) => (
-        <React.Fragment key={id}>
-          <div
-            className="col-span-2 card w-full bg-base-100 shadow-xl mx-auto mb-3"
-            key={id}
-          >
-            <div className="card-body">
-              <h2 className="card-title">{text}</h2>
-            </div>
-          </div>
-          <div className="col-span-1" />
-        </React.Fragment>
-      ))}
+    <div className="h-96 overflow-y-auto scrollbar">
+      <table className="table w-full">
+        <thead>
+          <tr>
+            <th className="sticky top-0" style={{ zIndex: "20" }}>
+              <label>
+                <input type="checkbox" className="checkbox" />
+              </label>
+            </th>
+            <th className="sticky top-0" style={{ zIndex: "20" }}>
+              Todo
+            </th>
+            <th className="sticky top-0" style={{ zIndex: "20" }}></th>
+          </tr>
+        </thead>
+        <tbody>
+          {data ? (
+            data.todos.map(({ id, text }) => (
+              <tr key={id}>
+                <th>
+                  <label>
+                    <input type="checkbox" className="checkbox" />
+                  </label>
+                </th>
+                <td>
+                  <h2 className="card-title">{text}</h2>
+                </td>
+                <td className="text-error text-right">
+                  <button className="btn btn-circle btn-outline btn-error">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <th></th>
+              <td>
+                <span>No todos to display 🙁</span>
+              </td>
+              <td></td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };
@@ -70,30 +111,25 @@ const TodosList = () => {
 
   return (
     <form onSubmit={onSend}>
-      <div className="container mx-auto">
-        <div className="grid grid-cols-4 justify-center items-end">
-          <div className="col-span-2 p-2">
+      <div className="card w-1/2 mx-auto bg-neutral shadow-xl fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div className="card-body">
+          <div className="w-full flex card-title">
             <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Todo</span>
-              </label>
               <input
                 type="text"
                 placeholder="Type here"
-                className="input input-bordered w-full "
+                className="input input-bordered w-full"
                 ref={inputRef}
               />
             </div>
-          </div>
-          <div className="col-span-1 p-2 ">
-            <button className="btn btn-primary w-full" type="submit">
+
+            <button className="btn btn-primary ml-auto" type="submit">
               Send
             </button>
           </div>
+          <Todos />
         </div>
       </div>
-
-      <Todos />
     </form>
   );
 };
