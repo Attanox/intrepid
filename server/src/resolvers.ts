@@ -16,7 +16,7 @@ interface Message {
 
 const cursors: { [id: string]: Cursor } = {};
 const todos: Todo[] = [];
-const messages: Message[] = [];
+const messages: { [user: string]: Message } = {};
 
 const todosSubscribers: (() => void)[] = [];
 const onTodosUpdates = (fn: () => void) => todosSubscribers.push(fn);
@@ -68,11 +68,11 @@ const resolvers = {
     ) => {
       const id = uuid();
 
-      messages.push({
+      messages[user] = {
         id,
         user,
         content,
-      });
+      };
 
       spreadMessages();
       return id;
@@ -127,8 +127,14 @@ const resolvers = {
       ) => {
         const channel = generateChannelID();
 
-        onMessagesUpdates(() => pubsub.publish(channel, { messages }));
-        setTimeout(() => pubsub.publish(channel, { messages }), 0);
+        onMessagesUpdates(() =>
+          pubsub.publish(channel, { messages: [...Object.values(messages)] })
+        );
+        setTimeout(
+          () =>
+            pubsub.publish(channel, { messages: [...Object.values(messages)] }),
+          0
+        );
 
         return pubsub.asyncIterator(channel);
       },
