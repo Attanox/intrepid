@@ -27,6 +27,9 @@ const typeDefs = `
   }
   type Mutation {
     addTodo(text: String!): ID!
+    updateTodo(id: ID!, is_completed: Boolean!): ID!
+    updateTodoAll(is_completed: Boolean!): Boolean
+    deleteTodo(id: ID!): ID!
     updateCursor(c: CursorInput!): ID!
     postMessage(user: String!, content: String!): ID!
   }

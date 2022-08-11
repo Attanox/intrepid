@@ -15,12 +15,12 @@ interface Message {
 }
 
 const cursors: { [id: string]: Cursor } = {};
-const todos: Todo[] = [];
 const messages: { [user: string]: Message } = {};
 
-const todosSubscribers: (() => void)[] = [];
-const onTodosUpdates = (fn: () => void) => todosSubscribers.push(fn);
-const spreadTodos = () => todosSubscribers.forEach((fn) => fn());
+const todosSubscribers: (() => Promise<boolean>)[] = [];
+const onTodosUpdates = (fn: () => Promise<boolean>) =>
+  todosSubscribers.push(fn);
+const spreadTodos = () => todosSubscribers.forEach(async (fn) => await fn());
 
 const cursorsSubscribers: (() => void)[] = [];
 const onCursorsUpdates = (fn: () => void) => cursorsSubscribers.push(fn);
@@ -35,20 +35,67 @@ const generateChannelID = () => Math.random().toString(36).slice(2, 15);
 const resolvers = {
   Query: {
     cursors: () => cursors,
-    todos: () => todos,
+    todos: async (
+      _: any,
+      _args: any,
+      { prisma }: { prisma: Context["prisma"] }
+    ) => await prisma.todo.findMany(),
     messages: () => messages,
   },
   Mutation: {
-    addTodo: (_: any, { text }: { text: string }) => {
-      const id = String(todos.length);
-      todos.push({
-        id,
-        text,
-        is_completed: false,
-        order: todos.length,
-        created_at: new Date(),
-        updated_at: new Date(),
+    addTodo: async (_: any, { text }: { text: string }, ctx: Context) => {
+      const todos = await ctx.prisma.todo.findMany();
+
+      const created = await ctx.prisma.todo.create({
+        data: {
+          text,
+          is_completed: false,
+          order: todos.length,
+        },
       });
+
+      spreadTodos();
+      return created.id;
+    },
+    updateTodo: async (
+      _: any,
+      { id, is_completed }: { id: string; is_completed: boolean },
+      ctx: Context
+    ) => {
+      await ctx.prisma.todo.update({
+        where: {
+          id,
+        },
+        data: {
+          is_completed,
+        },
+      });
+
+      spreadTodos();
+      return id;
+    },
+    updateTodoAll: async (
+      _: any,
+      { is_completed }: { is_completed: boolean },
+      ctx: Context
+    ) => {
+      await ctx.prisma.todo.updateMany({
+        data: {
+          is_completed,
+        },
+      });
+
+      spreadTodos();
+
+      return true;
+    },
+    deleteTodo: async (_: any, { id }: { id: string }, ctx: Context) => {
+      await ctx.prisma.todo.delete({
+        where: {
+          id,
+        },
+      });
+
       spreadTodos();
       return id;
     },
@@ -80,15 +127,18 @@ const resolvers = {
   },
   Subscription: {
     todos: {
-      subscribe: (
-        _: any,
-        _args: any,
-        { pubsub }: { pubsub: Context["pubsub"] }
-      ) => {
+      subscribe: async (_: any, _args: any, { pubsub, prisma }: Context) => {
         const channel = generateChannelID();
 
-        onTodosUpdates(() => pubsub.publish(channel, { todos }));
-        setTimeout(() => pubsub.publish(channel, { todos }), 0);
+        const getTodos = async () => await prisma.todo.findMany();
+
+        onTodosUpdates(async () =>
+          pubsub.publish(channel, { todos: await getTodos() })
+        );
+        setTimeout(
+          async () => pubsub.publish(channel, { todos: await getTodos() }),
+          0
+        );
 
         return pubsub.asyncIterator(channel);
       },

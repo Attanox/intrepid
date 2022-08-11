@@ -26,8 +26,33 @@ const ADD_TODO = gql`
   }
 `;
 
+const UPDATE_TODO = gql`
+  mutation ($id: ID!, $is_completed: Boolean!) {
+    updateTodo(id: $id, is_completed: $is_completed)
+  }
+`;
+
+const UPDATE_TODO_ALL = gql`
+  mutation ($is_completed: Boolean!) {
+    updateTodoAll(is_completed: $is_completed)
+  }
+`;
+
+const DELETE_TODO = gql`
+  mutation ($id: ID!) {
+    deleteTodo(id: $id)
+  }
+`;
+
 const Todos = () => {
   const { data } = useSubscription<TodosQuery>(GET_TODOS);
+  const [updateTodo] = useMutation(UPDATE_TODO);
+  const [updateTodoAll] = useMutation(UPDATE_TODO_ALL);
+  const [deleteTodo] = useMutation(DELETE_TODO);
+
+  const all_checked = data?.todos.length
+    ? !data?.todos.some((t) => !t.is_completed)
+    : false;
 
   return (
     <div className="h-96 overflow-y-auto scrollbar">
@@ -36,7 +61,18 @@ const Todos = () => {
           <tr>
             <th className="sticky top-0" style={{ zIndex: "20" }}>
               <label>
-                <input type="checkbox" className="checkbox" />
+                <input
+                  checked={all_checked}
+                  onChange={async (e) =>
+                    await updateTodoAll({
+                      variables: {
+                        is_completed: e.target.checked,
+                      },
+                    })
+                  }
+                  type="checkbox"
+                  className="checkbox"
+                />
               </label>
             </th>
             <th className="sticky top-0" style={{ zIndex: "20" }}>
@@ -47,18 +83,45 @@ const Todos = () => {
         </thead>
         <tbody>
           {data ? (
-            data.todos.map(({ id, text }) => (
+            data.todos.map(({ id, text, is_completed }) => (
               <tr key={id}>
                 <th>
                   <label>
-                    <input type="checkbox" className="checkbox" />
+                    <input
+                      onChange={async (e) =>
+                        await updateTodo({
+                          variables: {
+                            id,
+                            is_completed: e.target.checked,
+                          },
+                        })
+                      }
+                      checked={is_completed}
+                      type="checkbox"
+                      className="checkbox"
+                    />
                   </label>
                 </th>
                 <td>
-                  <h2 className="card-title">{text}</h2>
+                  <h2
+                    className={`card-title ${
+                      is_completed ? "line-through" : ""
+                    }`}
+                  >
+                    {text}
+                  </h2>
                 </td>
                 <td className="text-error text-right">
-                  <button className="btn btn-circle btn-outline btn-error">
+                  <button
+                    onClick={async () =>
+                      await deleteTodo({
+                        variables: {
+                          id,
+                        },
+                      })
+                    }
+                    className="btn btn-circle btn-outline btn-error"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-6 w-6"
