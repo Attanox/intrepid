@@ -1,9 +1,9 @@
 import { v4 as uuid } from "uuid";
-import type { Todo } from "@prisma/client";
 import type { Context } from "./server";
 
 interface Cursor {
   id: string;
+  name: string;
   x: number;
   y: number;
 }
@@ -34,13 +34,13 @@ const generateChannelID = () => Math.random().toString(36).slice(2, 15);
 
 const resolvers = {
   Query: {
-    cursors: () => cursors,
+    cursors: () => [...Object.values(cursors)],
     todos: async (
       _: any,
       _args: any,
       { prisma }: { prisma: Context["prisma"] }
     ) => await prisma.todo.findMany(),
-    messages: () => messages,
+    messages: () => [...Object.values(messages)],
   },
   Mutation: {
     addTodo: async (_: any, { text }: { text: string }, ctx: Context) => {

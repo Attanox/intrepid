@@ -2,7 +2,9 @@ import React from "react";
 import { Dialog } from "@reach/dialog";
 import "@reach/dialog/styles.css";
 
-const UserEnter = (props: { setCurrentUser: (u: string) => void }) => {
+const UserEnter = (props: {
+  setCurrentUser: ({ id, name }: { id: string; name: string }) => void;
+}) => {
   const { setCurrentUser } = props;
   const [showDialog, setShowDialog] = React.useState(true);
 
@@ -13,8 +15,9 @@ const UserEnter = (props: { setCurrentUser: (u: string) => void }) => {
 
     const value = inputRef.current?.value;
     if (value) {
+      const id = Date.now().toString();
       setShowDialog(false);
-      setCurrentUser(value);
+      setCurrentUser({ id, name: value });
     }
   };
 

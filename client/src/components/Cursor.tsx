@@ -66,7 +66,13 @@ const POST_MESSAGE = gql`
 `;
 
 const Cursor = (
-  { id, x, y, current } = { id: "0", x: 0, y: 0, current: false }
+  { id, name, x, y, current } = {
+    id: "0",
+    name: "",
+    x: 0,
+    y: 0,
+    current: false,
+  }
 ) => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const { data } = useSubscription<{ messages: Message[] }>(GET_MESSAGES);
@@ -86,11 +92,10 @@ const Cursor = (
     posY.set(y - CURSOR_SIZE / 2);
   }, [y]);
 
-  const color = getColor(id);
+  const color = getColor(name);
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(inputRef.current?.value);
     if (inputRef.current) {
       postMessage({
         variables: {
@@ -139,7 +144,7 @@ const Cursor = (
         className="card w-48 bg-primary"
       >
         <div className="card-body py-2 px-0">
-          <h2 className="card-title">{id}</h2>
+          <h2 className="card-title">{name}</h2>
           {current ? (
             <input
               ref={inputRef}

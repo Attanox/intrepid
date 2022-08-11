@@ -7,6 +7,7 @@ const typeDefs = `
   }
   type Cursor {
     id: ID!
+    name: String!
     x: Float!
     y: Float!
   }
@@ -17,6 +18,7 @@ const typeDefs = `
   }
   input CursorInput {
     id: ID!
+    name: String!
     x: Float!
     y: Float!
   }

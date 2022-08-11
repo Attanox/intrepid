@@ -187,7 +187,7 @@ const TodosList = () => {
             </div>
 
             <button className="btn btn-primary ml-auto" type="submit">
-              Send
+              Add
             </button>
           </div>
           <Todos />

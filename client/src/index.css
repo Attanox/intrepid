@@ -4,6 +4,7 @@
 
 html, body {
   cursor: none;
+  overflow: hidden;
 }
 
 @layer utilities {
