@@ -143,28 +143,72 @@ const Cursor = (
         className="bg-primary h-24"
       >
         <div
-          style={{ borderRadius: "10px 0 0 10px", width: "20px" }}
-          className="left absolute top-0 bottom-0 left-0 bg-red-500 "
+          style={{ width: "20px", height: "21px" }}
+          className="absolute top-0 left-0 bg-red-500 rounded-tl-md"
         ></div>
         <motion.div
-          style={{ width: "1px", left: "19px" }}
+          style={{ width: "20px", height: "1px" }}
           animate={{
-            scaleX: [62, 124, 62],
+            scaleY: [10, 80, 10],
           }}
           transition={{ repeat: Infinity }}
-          className="center absolute top-0 bottom-0 bg-yellow-500 origin-left"
-        ></motion.div>
+          className="absolute top-5 left-0 origin-top bg-red-500"
+        />
+        <motion.div
+          style={{ width: "20px", height: "20px" }}
+          animate={{
+            translateY: ["28px", "76px", "28px"],
+          }}
+          transition={{ repeat: Infinity }}
+          className="absolute left-0 rounded-bl-md origin-top bg-red-500"
+        />
+
+        <motion.div
+          style={{ width: "1px", height: "1px", left: "19px" }}
+          animate={{
+            scaleX: [100, 220, 100],
+            scaleY: [60, 120, 60],
+          }}
+          transition={{ repeat: Infinity }}
+          className="absolute top-0 origin-top-left bg-red-500"
+        />
+
         <motion.div
           style={{
-            borderRadius: "0 10px 10px 0",
             width: "20px",
+            height: "21px",
           }}
           animate={{
-            translateX: ["58px", "116px", "58px"],
+            translateX: ["93px", "193px", "93px"],
           }}
           transition={{ repeat: Infinity }}
-          className="right absolute top-0 bottom-0 bg-blue-500"
-        ></motion.div>
+          className="right absolute top-0 left-0 rounded-tr-md origin-top-left bg-red-500"
+        />
+        <motion.div
+          style={{
+            width: "20px",
+            height: "1px",
+          }}
+          animate={{
+            scaleY: [10, 80, 10],
+            translateX: ["93px", "193px", "93px"],
+          }}
+          transition={{ repeat: Infinity }}
+          className="right absolute top-5 origin-top-left bg-red-500"
+        />
+        <motion.div
+          style={{
+            width: "20px",
+            height: "20px",
+          }}
+          animate={{
+            translateX: ["93px", "193px", "93px"],
+            translateY: ["28px", "76px", "28px"],
+          }}
+          transition={{ repeat: Infinity }}
+          className="right absolute rounded-br-md  origin-top-left bg-red-500"
+        />
+
         <h2 className="relative top-1 left-2 card-title">{name}</h2>
         {current ? (
           <motion.input
