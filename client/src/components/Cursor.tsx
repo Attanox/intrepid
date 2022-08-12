@@ -27,9 +27,13 @@ function CursorSvg({ color }: { color: string }) {
   );
 }
 
-const useFocusInput = (input: React.RefObject<HTMLInputElement>) => {
+const useFocusInput = (
+  input: React.RefObject<HTMLInputElement>,
+  toggle: () => void
+) => {
   const handleKeyUp = (e: KeyboardEvent) => {
     if (e.key === "/") {
+      toggle();
       input?.current?.focus();
     }
   };
@@ -79,7 +83,11 @@ const Cursor = (
 
   const [postMessage] = useMutation(POST_MESSAGE);
 
-  useFocusInput(inputRef);
+  const [open, setOpen] = React.useState(false);
+
+  const toggle = () => setOpen(!open);
+
+  useFocusInput(inputRef, toggle);
 
   const posX = useMotionValue(0);
   const posY = useMotionValue(0);
@@ -105,8 +113,11 @@ const Cursor = (
       });
       inputRef.current.value = "";
       inputRef.current.blur();
+      toggle();
     }
   };
+
+  const isExpanded = (open && current) || (data?.messages.length && !current);
 
   return (
     <motion.div
@@ -143,70 +154,99 @@ const Cursor = (
         className="bg-primary h-24"
       >
         <div
-          style={{ width: "20px", height: "21px" }}
-          className="absolute top-0 left-0 bg-red-500 rounded-tl-md"
+          style={{ width: "20px", height: "21px", background: color }}
+          className="absolute top-0 left-0 rounded-tl-md"
         ></div>
         <motion.div
-          style={{ width: "20px", height: "1px" }}
-          animate={{
-            scaleY: [10, 80, 10],
+          style={{ width: "20px", height: "1px", background: color }}
+          initial={{
+            scaleY: 10,
           }}
-          transition={{ repeat: Infinity }}
-          className="absolute top-5 left-0 origin-top bg-red-500"
+          animate={{
+            scaleY: isExpanded ? 80 : 10,
+          }}
+          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
+          className="absolute top-5 left-0 origin-top"
         />
         <motion.div
-          style={{ width: "20px", height: "20px" }}
-          animate={{
-            translateY: ["28px", "76px", "28px"],
+          style={{ width: "20px", height: "20px", background: color }}
+          initial={{
+            translateY: "28px",
           }}
-          transition={{ repeat: Infinity }}
-          className="absolute left-0 rounded-bl-md origin-top bg-red-500"
+          animate={{
+            translateY: isExpanded ? "76px" : "28px",
+          }}
+          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
+          className="absolute left-0 rounded-bl-md origin-top"
         />
 
         <motion.div
-          style={{ width: "1px", height: "1px", left: "19px" }}
-          animate={{
-            scaleX: [100, 220, 100],
-            scaleY: [60, 120, 60],
+          style={{
+            width: "1px",
+            height: "1px",
+            left: "19px",
+            background: color,
           }}
-          transition={{ repeat: Infinity }}
-          className="absolute top-0 origin-top-left bg-red-500"
+          initial={{
+            scaleX: 100,
+            scaleY: 60,
+          }}
+          animate={{
+            scaleX: isExpanded ? 220 : 100,
+            scaleY: isExpanded ? 120 : 60,
+          }}
+          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
+          className="absolute top-0 origin-top-left"
         />
 
         <motion.div
           style={{
             width: "20px",
             height: "21px",
+            background: color,
+          }}
+          initial={{
+            translateX: "93px",
           }}
           animate={{
-            translateX: ["93px", "193px", "93px"],
+            translateX: isExpanded ? "193px" : "93px",
           }}
-          transition={{ repeat: Infinity }}
-          className="right absolute top-0 left-0 rounded-tr-md origin-top-left bg-red-500"
+          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
+          className="right absolute top-0 left-0 rounded-tr-md origin-top-left"
         />
         <motion.div
           style={{
             width: "20px",
             height: "1px",
+            background: color,
+          }}
+          initial={{
+            scaleY: 10,
+            translateX: "93px",
           }}
           animate={{
-            scaleY: [10, 80, 10],
-            translateX: ["93px", "193px", "93px"],
+            scaleY: isExpanded ? 80 : 10,
+            translateX: isExpanded ? "193px" : "93px",
           }}
-          transition={{ repeat: Infinity }}
-          className="right absolute top-5 origin-top-left bg-red-500"
+          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
+          className="right absolute top-5 origin-top-left"
         />
         <motion.div
           style={{
             width: "20px",
             height: "20px",
+            background: color,
+          }}
+          initial={{
+            translateX: "93px",
+            translateY: "28px",
           }}
           animate={{
-            translateX: ["93px", "193px", "93px"],
-            translateY: ["28px", "76px", "28px"],
+            translateX: isExpanded ? "193px" : "93px",
+            translateY: isExpanded ? "76px" : "28px",
           }}
-          transition={{ repeat: Infinity }}
-          className="right absolute rounded-br-md  origin-top-left bg-red-500"
+          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
+          className="right absolute rounded-br-md  origin-top-left"
         />
 
         <h2 className="relative top-1 left-2 card-title">{name}</h2>
@@ -216,13 +256,25 @@ const Cursor = (
             type="text"
             placeholder="Type here"
             className="relative top-2 left-2 input w-full max-w-xs"
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: open ? 1 : 0,
+            }}
+            transition={{ delay: open ? 1.15 : 0 }}
           />
         ) : (
-          <div className="relative top-2 left-2 flex flex-col">
+          <div
+            style={{
+              maxWidth: "200px",
+              maxHeight: "50px",
+              overflow: "auto",
+            }}
+            className=" relative top-2 left-2 flex flex-col scrollbar"
+          >
             {data?.messages.map((message) => {
               if (message.user !== id) return null;
 
-              return <span key={message.id}>{message.content}</span>;
+              return <h3 key={message.id}>{message.content}</h3>;
             })}
           </div>
         )}

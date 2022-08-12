@@ -32,6 +32,12 @@ const UPDATE_CURSOR = gql`
   }
 `;
 
+const DELETE_CURSOR = gql`
+  mutation ($id: ID!) {
+    deleteCursor(id: $id)
+  }
+`;
+
 const useUpdateCursor = (id: string, name: string) => {
   const [updateCursor] = useMutation(UPDATE_CURSOR);
 
@@ -78,6 +84,32 @@ const useUpdateCursor = (id: string, name: string) => {
   return { visible };
 };
 
+const useRemoveUser = (userID: string) => {
+  const [deleteCursor] = useMutation(DELETE_CURSOR);
+
+  const onUserLeaving = async (event: Event) => {
+    event.preventDefault();
+
+    await deleteCursor({
+      variables: {
+        id: userID,
+      },
+    });
+
+    return true;
+  };
+
+  React.useEffect(() => {
+    window.onunload = onUserLeaving;
+
+    return () => {
+      window.onunload = null;
+    };
+  }, [userID]);
+
+  return null;
+};
+
 const CollabArea = (props: React.PropsWithChildren<{}>) => {
   const { children } = props;
 
@@ -93,10 +125,12 @@ const CollabArea = (props: React.PropsWithChildren<{}>) => {
 
   const { visible } = useUpdateCursor(currentUser.id, currentUser.name);
 
+  useRemoveUser(currentUser.id);
+
   return (
     <React.Fragment>
       <UserEnter setCurrentUser={setCurrentUser} />
-      {/* {data?.cursors.map((c) => {
+      {data?.cursors.map((c) => {
         const posX = c.x * window.innerWidth;
         const posY = c.y * window.innerHeight;
         const isCurrent = currentUser.id === c.id;
@@ -113,9 +147,9 @@ const CollabArea = (props: React.PropsWithChildren<{}>) => {
             y={posY}
           />
         );
-      })} */}
+      })}
 
-      <Cursor
+      {/* <Cursor
         id={Date.now().toString()}
         name={"John"}
         current={false}
@@ -129,7 +163,7 @@ const CollabArea = (props: React.PropsWithChildren<{}>) => {
         current={true}
         x={250}
         y={250}
-      />
+      /> */}
 
       {children}
     </React.Fragment>

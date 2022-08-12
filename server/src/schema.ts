@@ -33,6 +33,7 @@ const typeDefs = `
     updateTodoAll(is_completed: Boolean!): Boolean
     deleteTodo(id: ID!): ID!
     updateCursor(c: CursorInput!): ID!
+    deleteCursor(id: ID!): ID!
     postMessage(user: String!, content: String!): ID!
   }
   type Subscription {

@@ -109,6 +109,14 @@ const resolvers = {
       spreadCursors();
       return args.c.id;
     },
+    deleteCursor: (_: any, args: { id: string }) => {
+      if (!args?.id) return "";
+
+      delete cursors[args.id];
+      spreadCursors();
+
+      return args.id;
+    },
     postMessage: (
       _: any,
       { user, content }: { user: string; content: string }
