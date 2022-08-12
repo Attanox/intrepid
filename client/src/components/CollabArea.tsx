@@ -96,7 +96,7 @@ const CollabArea = (props: React.PropsWithChildren<{}>) => {
   return (
     <React.Fragment>
       <UserEnter setCurrentUser={setCurrentUser} />
-      {data?.cursors.map((c) => {
+      {/* {data?.cursors.map((c) => {
         const posX = c.x * window.innerWidth;
         const posY = c.y * window.innerHeight;
         const isCurrent = currentUser.id === c.id;
@@ -113,7 +113,24 @@ const CollabArea = (props: React.PropsWithChildren<{}>) => {
             y={posY}
           />
         );
-      })}
+      })} */}
+
+      <Cursor
+        id={Date.now().toString()}
+        name={"John"}
+        current={false}
+        x={50}
+        y={50}
+      />
+
+      <Cursor
+        id={(Date.now() * 2).toString()}
+        name={"Geo"}
+        current={true}
+        x={250}
+        y={250}
+      />
+
       {children}
     </React.Fragment>
   );

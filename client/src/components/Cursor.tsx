@@ -117,6 +117,7 @@ const Cursor = (
         zIndex: "999999999",
         pointerEvents: "none",
         userSelect: "none",
+        transformOrigin: "left",
       }}
       initial={{ x: posX.get(), y: posY.get() }}
       animate={{ x: posX.get(), y: posY.get() }}
@@ -136,32 +137,51 @@ const Cursor = (
           zIndex: "999999999",
           pointerEvents: "none",
           userSelect: "none",
-          background: color,
-          borderRadius: "10px",
-          padding: "5px 10px",
+          background: "transparent",
         }}
         onSubmit={onSubmit}
-        className="card w-48 bg-primary"
+        className="bg-primary h-24"
       >
-        <div className="card-body py-2 px-0">
-          <h2 className="card-title">{name}</h2>
-          {current ? (
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Type here"
-              className="input w-full max-w-xs"
-            />
-          ) : (
-            <div className="flex flex-col">
-              {data?.messages.map((message) => {
-                if (message.user !== id) return null;
+        <div
+          style={{ borderRadius: "10px 0 0 10px", width: "20px" }}
+          className="left absolute top-0 bottom-0 left-0 bg-red-500 "
+        ></div>
+        <motion.div
+          style={{ width: "1px", left: "19px" }}
+          animate={{
+            scaleX: [62, 124, 62],
+          }}
+          transition={{ repeat: Infinity }}
+          className="center absolute top-0 bottom-0 bg-yellow-500 origin-left"
+        ></motion.div>
+        <motion.div
+          style={{
+            borderRadius: "0 10px 10px 0",
+            width: "20px",
+          }}
+          animate={{
+            translateX: ["58px", "116px", "58px"],
+          }}
+          transition={{ repeat: Infinity }}
+          className="right absolute top-0 bottom-0 bg-blue-500"
+        ></motion.div>
+        <h2 className="relative top-1 left-2 card-title">{name}</h2>
+        {current ? (
+          <motion.input
+            ref={inputRef}
+            type="text"
+            placeholder="Type here"
+            className="relative top-2 left-2 input w-full max-w-xs"
+          />
+        ) : (
+          <div className="relative top-2 left-2 flex flex-col">
+            {data?.messages.map((message) => {
+              if (message.user !== id) return null;
 
-                return <span key={message.id}>{message.content}</span>;
-              })}
-            </div>
-          )}
-        </div>
+              return <span key={message.id}>{message.content}</span>;
+            })}
+          </div>
+        )}
       </form>
     </motion.div>
   );
