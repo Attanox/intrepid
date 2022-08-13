@@ -149,22 +149,6 @@ const CollabArea = (props: React.PropsWithChildren<{}>) => {
         );
       })}
 
-      {/* <Cursor
-        id={Date.now().toString()}
-        name={"John"}
-        current={false}
-        x={50}
-        y={50}
-      />
-
-      <Cursor
-        id={(Date.now() * 2).toString()}
-        name={"Geo"}
-        current={true}
-        x={250}
-        y={250}
-      /> */}
-
       {children}
     </React.Fragment>
   );

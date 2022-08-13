@@ -1,7 +1,6 @@
 import React from "react";
 import { motion, useMotionValue } from "framer-motion";
 import { gql, useMutation } from "@apollo/client";
-import { Slice } from "./CursorTitle";
 import { getColor } from "@/utils";
 
 const CURSOR_SIZE = 30;
@@ -22,13 +21,9 @@ function CursorSvg({ color }: { color: string }) {
   );
 }
 
-const useFocusInput = (
-  input: React.RefObject<HTMLInputElement>,
-  toggle: () => void
-) => {
+const useFocusInput = (input: React.RefObject<HTMLInputElement>) => {
   const handleKeyUp = (e: KeyboardEvent) => {
     if (e.key === "/") {
-      toggle();
       input?.current?.focus();
     }
   };
@@ -61,11 +56,7 @@ const Cursor = (
 
   const [postMessage] = useMutation(POST_MESSAGE);
 
-  const [open, setOpen] = React.useState(false);
-
-  const toggle = () => setOpen(!open);
-
-  useFocusInput(inputRef, toggle);
+  useFocusInput(inputRef);
 
   const posX = useMotionValue(0);
   const posY = useMotionValue(0);
@@ -92,13 +83,8 @@ const Cursor = (
       });
       inputRef.current.value = "";
       inputRef.current.blur();
-      toggle();
     }
   };
-
-  const isExpanded = Boolean(
-    (open && current) || document.activeElement === inputRef.current
-  );
 
   return (
     <motion.div
@@ -130,30 +116,19 @@ const Cursor = (
             zIndex: "999999999",
             pointerEvents: "none",
             userSelect: "none",
-            background: "transparent",
+            background: color,
+            maxWidth: "200px",
+            overflow: "hidden",
           }}
-          className="bg-primary h-24"
+          className={`bg-primary px-2 rounded-xl ${current ? "h-16" : "h-8"}`}
         >
-          <Slice.TopLeft color={color} isExpanded={isExpanded} />
-          <Slice.CenterLeft color={color} isExpanded={isExpanded} />
-          <Slice.BottomLeft color={color} isExpanded={isExpanded} />
-          <Slice.Center color={color} isExpanded={isExpanded} />
-          <Slice.TopRight color={color} isExpanded={isExpanded} />
-          <Slice.CenterRight color={color} isExpanded={isExpanded} />
-          <Slice.BottomRight color={color} isExpanded={isExpanded} />
-
-          <h2 className="relative top-1 left-2 card-title">{name}</h2>
+          <h2 className="card-title">{name}</h2>
           {current ? (
-            <motion.input
+            <input
               ref={inputRef}
               type="text"
               placeholder="Type here"
-              className="relative top-4 left-2 input w-full max-w-xs"
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: open ? 1 : 0,
-              }}
-              transition={{ delay: open ? 1.15 : 0 }}
+              className="input w-full max-w-xs h-8"
             />
           ) : null}
         </div>
