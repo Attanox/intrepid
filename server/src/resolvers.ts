@@ -11,7 +11,9 @@ interface Cursor {
 interface Message {
   id: string;
   user: string;
+  name: string;
   content: string;
+  createdAt: string;
 }
 
 const cursors: { [id: string]: Cursor } = {};
@@ -119,14 +121,16 @@ const resolvers = {
     },
     postMessage: (
       _: any,
-      { user, content }: { user: string; content: string }
+      { user, name, content }: { user: string; name: string; content: string }
     ) => {
       const id = uuid();
 
       messages[user] = {
         id,
         user,
+        name,
         content,
+        createdAt: Date.now().toString(),
       };
 
       spreadMessages();

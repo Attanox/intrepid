@@ -1,15 +1,10 @@
 import React from "react";
 import { motion, useMotionValue } from "framer-motion";
-import { gql, useMutation, useSubscription } from "@apollo/client";
-
-export const COLORS = ["#E779C1", "#58C7F3", "#71EAD2", "#F3CC30", "#E24056"];
+import { gql, useMutation } from "@apollo/client";
+import { Slice } from "./CursorTitle";
+import { getColor } from "@/utils";
 
 const CURSOR_SIZE = 30;
-
-const getColor = (id: string) => {
-  const index = (id?.charCodeAt(0) || 0) % COLORS.length;
-  return COLORS[index];
-};
 
 function CursorSvg({ color }: { color: string }) {
   return (
@@ -47,25 +42,9 @@ const useFocusInput = (
   return {};
 };
 
-interface Message {
-  id: string;
-  content: string;
-  user: string;
-}
-
-const GET_MESSAGES = gql`
-  subscription {
-    messages {
-      id
-      content
-      user
-    }
-  }
-`;
-
 const POST_MESSAGE = gql`
-  mutation ($user: String!, $content: String!) {
-    postMessage(user: $user, content: $content)
+  mutation ($user: String!, $name: String!, $content: String!) {
+    postMessage(user: $user, name: $name, content: $content)
   }
 `;
 
@@ -79,7 +58,6 @@ const Cursor = (
   }
 ) => {
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const { data } = useSubscription<{ messages: Message[] }>(GET_MESSAGES);
 
   const [postMessage] = useMutation(POST_MESSAGE);
 
@@ -108,6 +86,7 @@ const Cursor = (
       postMessage({
         variables: {
           user: id,
+          name,
           content: inputRef.current.value,
         },
       });
@@ -117,7 +96,9 @@ const Cursor = (
     }
   };
 
-  const isExpanded = (open && current) || (data?.messages.length && !current);
+  const isExpanded = Boolean(
+    (open && current) || document.activeElement === inputRef.current
+  );
 
   return (
     <motion.div
@@ -140,144 +121,42 @@ const Cursor = (
       }}
     >
       <CursorSvg color={color} />
-      <form
-        style={{
-          top: `-10px`,
-          left: `10px`,
-          position: "relative",
-          zIndex: "999999999",
-          pointerEvents: "none",
-          userSelect: "none",
-          background: "transparent",
-        }}
-        onSubmit={onSubmit}
-        className="bg-primary h-24"
-      >
+      <form onSubmit={onSubmit}>
         <div
-          style={{ width: "20px", height: "21px", background: color }}
-          className="absolute top-0 left-0 rounded-tl-md"
-        ></div>
-        <motion.div
-          style={{ width: "20px", height: "1px", background: color }}
-          initial={{
-            scaleY: 10,
-          }}
-          animate={{
-            scaleY: isExpanded ? 80 : 10,
-          }}
-          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
-          className="absolute top-5 left-0 origin-top"
-        />
-        <motion.div
-          style={{ width: "20px", height: "20px", background: color }}
-          initial={{
-            translateY: "28px",
-          }}
-          animate={{
-            translateY: isExpanded ? "76px" : "28px",
-          }}
-          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
-          className="absolute left-0 rounded-bl-md origin-top"
-        />
-
-        <motion.div
           style={{
-            width: "1px",
-            height: "1px",
-            left: "19px",
-            background: color,
+            top: `-10px`,
+            left: `10px`,
+            position: "relative",
+            zIndex: "999999999",
+            pointerEvents: "none",
+            userSelect: "none",
+            background: "transparent",
           }}
-          initial={{
-            scaleX: 100,
-            scaleY: 60,
-          }}
-          animate={{
-            scaleX: isExpanded ? 220 : 100,
-            scaleY: isExpanded ? 120 : 60,
-          }}
-          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
-          className="absolute top-0 origin-top-left"
-        />
+          className="bg-primary h-24"
+        >
+          <Slice.TopLeft color={color} isExpanded={isExpanded} />
+          <Slice.CenterLeft color={color} isExpanded={isExpanded} />
+          <Slice.BottomLeft color={color} isExpanded={isExpanded} />
+          <Slice.Center color={color} isExpanded={isExpanded} />
+          <Slice.TopRight color={color} isExpanded={isExpanded} />
+          <Slice.CenterRight color={color} isExpanded={isExpanded} />
+          <Slice.BottomRight color={color} isExpanded={isExpanded} />
 
-        <motion.div
-          style={{
-            width: "20px",
-            height: "21px",
-            background: color,
-          }}
-          initial={{
-            translateX: "93px",
-          }}
-          animate={{
-            translateX: isExpanded ? "193px" : "93px",
-          }}
-          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
-          className="right absolute top-0 left-0 rounded-tr-md origin-top-left"
-        />
-        <motion.div
-          style={{
-            width: "20px",
-            height: "1px",
-            background: color,
-          }}
-          initial={{
-            scaleY: 10,
-            translateX: "93px",
-          }}
-          animate={{
-            scaleY: isExpanded ? 80 : 10,
-            translateX: isExpanded ? "193px" : "93px",
-          }}
-          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
-          className="right absolute top-5 origin-top-left"
-        />
-        <motion.div
-          style={{
-            width: "20px",
-            height: "20px",
-            background: color,
-          }}
-          initial={{
-            translateX: "93px",
-            translateY: "28px",
-          }}
-          animate={{
-            translateX: isExpanded ? "193px" : "93px",
-            translateY: isExpanded ? "76px" : "28px",
-          }}
-          transition={{ duration: 1, delay: !isExpanded ? 0.75 : 0 }}
-          className="right absolute rounded-br-md  origin-top-left"
-        />
-
-        <h2 className="relative top-1 left-2 card-title">{name}</h2>
-        {current ? (
-          <motion.input
-            ref={inputRef}
-            type="text"
-            placeholder="Type here"
-            className="relative top-2 left-2 input w-full max-w-xs"
-            initial={{ opacity: 0 }}
-            animate={{
-              opacity: open ? 1 : 0,
-            }}
-            transition={{ delay: open ? 1.15 : 0 }}
-          />
-        ) : (
-          <div
-            style={{
-              maxWidth: "200px",
-              maxHeight: "50px",
-              overflow: "auto",
-            }}
-            className=" relative top-2 left-2 flex flex-col scrollbar"
-          >
-            {data?.messages.map((message) => {
-              if (message.user !== id) return null;
-
-              return <h3 key={message.id}>{message.content}</h3>;
-            })}
-          </div>
-        )}
+          <h2 className="relative top-1 left-2 card-title">{name}</h2>
+          {current ? (
+            <motion.input
+              ref={inputRef}
+              type="text"
+              placeholder="Type here"
+              className="relative top-4 left-2 input w-full max-w-xs"
+              initial={{ opacity: 0 }}
+              animate={{
+                opacity: open ? 1 : 0,
+              }}
+              transition={{ delay: open ? 1.15 : 0 }}
+            />
+          ) : null}
+        </div>
       </form>
     </motion.div>
   );

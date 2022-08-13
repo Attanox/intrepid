@@ -14,7 +14,9 @@ const typeDefs = `
   type Message {
     id: ID!
     user: String!
+    name: String!
     content: String!
+    createdAt: String!
   }
   input CursorInput {
     id: ID!
@@ -34,7 +36,7 @@ const typeDefs = `
     deleteTodo(id: ID!): ID!
     updateCursor(c: CursorInput!): ID!
     deleteCursor(id: ID!): ID!
-    postMessage(user: String!, content: String!): ID!
+    postMessage(user: String!, name: String!, content: String!): ID!
   }
   type Subscription {
     todos: [Todo!]
