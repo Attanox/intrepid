@@ -55,8 +55,8 @@ const Todos = () => {
     : false;
 
   return (
-    <div className="h-96 overflow-y-auto scrollbar">
-      <table className="table w-full">
+    <div className="h-full max-h-[40vh] md:max-h-[82vh] overflow-y-auto scrollbar">
+      <table className="table h-full w-full">
         <thead>
           <tr>
             <th className="sticky top-0" style={{ zIndex: "20" }}>
@@ -75,17 +75,13 @@ const Todos = () => {
                 />
               </label>
             </th>
-            <th className="sticky top-0" style={{ zIndex: "20" }}>
-              Todo
-            </th>
-            <th className="sticky top-0" style={{ zIndex: "20" }}></th>
           </tr>
         </thead>
-        <tbody>
+        <div className="flex flex-col items-stretch justify-center">
           {data ? (
             data.todos.map(({ id, text, is_completed }) => (
-              <tr key={id}>
-                <th>
+              <div className="bg-base-100 flex h-16" key={id}>
+                <div className="p-4">
                   <label>
                     <input
                       onChange={async (e) =>
@@ -101,8 +97,8 @@ const Todos = () => {
                       className="checkbox"
                     />
                   </label>
-                </th>
-                <td>
+                </div>
+                <div className="flex-1 p-4">
                   <h2
                     className={`card-title ${
                       is_completed ? "line-through" : ""
@@ -110,8 +106,8 @@ const Todos = () => {
                   >
                     {text}
                   </h2>
-                </td>
-                <td className="text-error text-right">
+                </div>
+                <div className="ml-auto pr-4 flex items-center text-error text-right">
                   <button
                     onClick={async () =>
                       await deleteTodo({
@@ -137,8 +133,8 @@ const Todos = () => {
                       />
                     </svg>
                   </button>
-                </td>
-              </tr>
+                </div>
+              </div>
             ))
           ) : (
             <tr>
@@ -149,7 +145,7 @@ const Todos = () => {
               <td></td>
             </tr>
           )}
-        </tbody>
+        </div>
       </table>
     </div>
   );
@@ -173,9 +169,9 @@ const TodosList = () => {
   };
 
   return (
-    <form onSubmit={onSend}>
-      <div className="card w-1/2 mx-auto bg-neutral shadow-xl fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <div className="card-body">
+    <form className="w-full h-full" onSubmit={onSend}>
+      <div className="card h-full w-full bg-neutral shadow-xl">
+        <div className="card-body p-2 md:p-5">
           <div className="w-full flex card-title">
             <div className="form-control w-full">
               <input

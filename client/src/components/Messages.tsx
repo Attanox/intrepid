@@ -1,6 +1,5 @@
 import { getColor } from "@/utils";
 import { gql, useSubscription } from "@apollo/client";
-import React from "react";
 import { motion } from "framer-motion";
 
 interface Message {
@@ -26,10 +25,8 @@ const GET_MESSAGES = gql`
 const Messages = () => {
   const { data } = useSubscription<{ messages: Message[] }>(GET_MESSAGES);
 
-  console.log("data", data?.messages);
-
   return (
-    <div className="toast toast-center w-1/2 max-h-40 overflow-auto scrollbar bg-neutral rounded-t-2xl shadow-xl">
+    <div className="card w-full h-full p-2 md:p-5 overflow-auto scrollbar bg-neutral rounded-t-2xl shadow-xl">
       {data?.messages
         .sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
         .map((message) => {
@@ -38,10 +35,12 @@ const Messages = () => {
               style={{
                 background: getColor(message.name),
               }}
-              className="alert py-2 scrollbar"
+              className="alert flex-row items-center py-2 mb-2 scrollbar"
             >
               <b>{message.name}:</b>
-              <h3 key={message.id}>{message.content}</h3>
+              <h3 style={{ marginTop: 0 }} key={message.id}>
+                {message.content}
+              </h3>
             </motion.div>
           );
         })}

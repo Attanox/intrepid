@@ -9,8 +9,11 @@ function App() {
   return (
     <WithApollo>
       <CollabArea>
-        <TodosList />
-        <Messages />
+        <div className="w-full h-screen p-2 flex flex-col md:flex-row items-center justify-between">
+          <TodosList />
+          <div className="h-4 w-4" />
+          <Messages />
+        </div>
       </CollabArea>
     </WithApollo>
   );
